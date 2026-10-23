@@ -6,17 +6,18 @@ let memoryProducts: ProductData[] = [...INITIAL_PRODUCTS];
 
 export async function getLiveProducts(): Promise<ProductData[]> {
   try {
-    await connectDB();
-    let dbProducts = await Product.find().sort({ createdAt: -1 }).lean();
-    
-    // Auto-seed Atlas database on first connect so you never start with an empty catalog
-    if (!dbProducts || dbProducts.length === 0) {
-      await Product.insertMany(INITIAL_PRODUCTS);
-      dbProducts = await Product.find().sort({ createdAt: -1 }).lean();
-    }
+    // Attempt DB with fast timeout
+    const dbPromise = (async () => {
+      await connectDB();
+      return await Product.find().sort({ createdAt: -1 }).lean();
+    })();
 
-    if (dbProducts && dbProducts.length > 0) {
-      return dbProducts.map((p: any) => ({
+    // Timeout safety race: if DB takes more than 500ms, immediately return cached products
+    const timeoutPromise = new Promise((resolve) => setTimeout(() => resolve(null), 500));
+    const result: any = await Promise.race([dbPromise, timeoutPromise]);
+
+    if (result && Array.isArray(result) && result.length > 0) {
+      return result.map((p: any) => ({
         id: p._id ? p._id.toString() : p.slug,
         title: p.title,
         slug: p.slug,
@@ -30,7 +31,7 @@ export async function getLiveProducts(): Promise<ProductData[]> {
       }));
     }
   } catch (err) {
-    // If Mongo is temporarily unreachable, fallback to default catalog
+    // Fail silently & instantaneously
   }
   return memoryProducts;
 }

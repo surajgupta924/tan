@@ -20,17 +20,17 @@ let memoryDevelopers: DeveloperRole[] = [...DEVELOPER_ROLES];
 
 export async function getLiveDevelopers(): Promise<DeveloperRole[]> {
   try {
-    await connectDB();
-    let dbDevs = await Developer.find().sort({ createdAt: -1 }).lean();
-    
-    // Auto-seed Atlas database on first connect so you never start with empty profiles
-    if (!dbDevs || dbDevs.length === 0) {
-      await Developer.insertMany(DEVELOPER_ROLES);
-      dbDevs = await Developer.find().sort({ createdAt: -1 }).lean();
-    }
+    const dbPromise = (async () => {
+      await connectDB();
+      return await Developer.find().sort({ createdAt: -1 }).lean();
+    })();
 
-    if (dbDevs && dbDevs.length > 0) {
-      return dbDevs.map((d: any) => ({
+    // 500ms race timeout for ultra-fast instant rendering
+    const timeoutPromise = new Promise((resolve) => setTimeout(() => resolve(null), 500));
+    const result: any = await Promise.race([dbPromise, timeoutPromise]);
+
+    if (result && Array.isArray(result) && result.length > 0) {
+      return result.map((d: any) => ({
         title: d.title,
         experience: d.experience,
         skills: d.skills || [],

@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/tansur_solutions';
+const MONGODB_URI = process.env.MONGODB_URI;
 
 interface CachedConnection {
   conn: typeof mongoose | null;
@@ -18,6 +18,11 @@ if (!global.mongooseCache) {
 }
 
 export async function connectDB() {
+  // If no Mongo URI provided or placeholder in production, skip immediately to prevent hanging
+  if (!MONGODB_URI || MONGODB_URI.includes('127.0.0.1') || MONGODB_URI.includes('Tansur2025Secure')) {
+    throw new Error('No valid remote MONGODB_URI set, using high-speed static/memory store');
+  }
+
   if (cached.conn) {
     return cached.conn;
   }
@@ -25,12 +30,15 @@ export async function connectDB() {
   if (!cached.promise) {
     const opts = {
       bufferCommands: false,
+      serverSelectionTimeoutMS: 2000, // FAST FAIL: don't wait 30 seconds if DB is unreachable
+      connectTimeoutMS: 2000,
+      socketTimeoutMS: 5000,
     };
 
     cached.promise = mongoose.connect(MONGODB_URI, opts).then((m) => {
       return m;
     }).catch((err) => {
-      console.warn("MongoDB connection notice (if no local DB running yet, in-memory mock can operate):", err.message);
+      cached.promise = null;
       throw err;
     });
   }
