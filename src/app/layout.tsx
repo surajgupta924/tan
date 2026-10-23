@@ -1,3 +1,4 @@
+
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
@@ -16,96 +17,72 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = constructMetadata();
+export const metadata: Metadata = {
+  ...constructMetadata(),
+  verification: {
+    google: "google4ef2557449badc55",
+  },
+};
 
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  // Enhanced 100% Comprehensive JSON-LD Schema: Organization, SoftwareApplication & WebSite
   const schemas = [
     {
       "@context": "https://schema.org",
       "@type": "Organization",
       "@id": "https://tansursoftware.com/#organization",
-      "name": "Tansur Software Solutions",
-      "url": "https://tansursoftware.com",
-      "logo": {
+      name: "Tansur Software Solutions",
+      url: "https://tansursoftware.com",
+      logo: {
         "@type": "ImageObject",
-        "url": "https://tansursoftware.com/logo.png",
-        "width": 512,
-        "height": 512
+        url: "https://tansursoftware.com/logo.png",
+        width: 512,
+        height: 512,
       },
-      "slogan": "Ideas • Technology • Solutions • Growth",
-      "description": "Enterprise software company engineering Housing Society ERP, Payroll HRMS, School Automation, Travel Engines, and providing dedicated Next.js & Full-Stack developer hiring.",
-      "telephone": "+91-9876543210",
-      "email": "contact@tansursoftware.com",
-      "address": {
-        "@type": "PostalAddress",
-        "streetAddress": "Sector 62, Electronic City",
-        "addressLocality": "Noida",
-        "addressRegion": "Uttar Pradesh",
-        "postalCode": "201309",
-        "addressCountry": "IN"
-      },
-      "sameAs": [
-        "https://www.linkedin.com/company/tansursoftware",
-        "https://twitter.com/tansursoftware"
-      ],
-      "contactPoint": {
-        "@type": "ContactPoint",
-        "telephone": "+91-9876543210",
-        "contactType": "Customer Support & Sales",
-        "areaServed": ["IN", "US", "AE", "GB"],
-        "availableLanguage": ["English", "Hindi"]
-      }
+      slogan: "Ideas • Technology • Solutions • Growth",
+      description:
+        "Software development, custom business applications, SaaS products, and IT solutions.",
+      email: "contact@tansursoftware.com",
     },
     {
       "@context": "https://schema.org",
       "@type": "WebSite",
       "@id": "https://tansursoftware.com/#website",
-      "url": "https://tansursoftware.com",
-      "name": "Tansur Software Solutions",
-      "publisher": {
-        "@id": "https://tansursoftware.com/#organization"
+      url: "https://tansursoftware.com",
+      name: "Tansur Software Solutions",
+      publisher: {
+        "@id": "https://tansursoftware.com/#organization",
       },
-      "inLanguage": "en-US"
+      inLanguage: "en-IN",
     },
-    {
-      "@context": "https://schema.org",
-      "@type": "SoftwareApplication",
-      "name": "Tansur ERP & Cloud Suite",
-      "applicationCategory": "BusinessApplication",
-      "operatingSystem": "Web, Cloud, Android, iOS",
-      "offers": {
-        "@type": "Offer",
-        "price": "0",
-        "priceCurrency": "INR"
-      },
-      "author": {
-        "@id": "https://tansursoftware.com/#organization"
-      }
-    }
   ];
 
   return (
     <html lang="en" className="scroll-smooth">
       <head>
-        {schemas.map((s, idx) => (
+        {schemas.map((schema, index) => (
           <script
-            key={idx}
+            key={index}
             type="application/ld+json"
-            dangerouslySetInnerHTML={{ __html: JSON.stringify(s) }}
+            dangerouslySetInnerHTML={{
+              __html: JSON.stringify(schema),
+            }}
           />
         ))}
       </head>
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased bg-slate-50 text-slate-900 selection:bg-blue-600 selection:text-white`}>
+
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-slate-50 text-slate-900 selection:bg-blue-600 selection:text-white`}
+      >
         <Navbar />
-        <main className="min-h-screen">
-          {children}
-        </main>
+
+        <main className="min-h-screen">{children}</main>
+
         <Footer />
+
         <WhatsAppFloatingButton />
       </body>
     </html>
