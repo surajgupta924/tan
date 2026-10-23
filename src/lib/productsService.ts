@@ -2,13 +2,19 @@ import { INITIAL_PRODUCTS, ProductData } from '@/data/products';
 import { connectDB } from '@/lib/mongodb';
 import Product from '@/models/Product';
 
-// In-memory runtime cache for dynamically added products if local MongoDB server is not running
 let memoryProducts: ProductData[] = [...INITIAL_PRODUCTS];
 
 export async function getLiveProducts(): Promise<ProductData[]> {
   try {
     await connectDB();
-    const dbProducts = await Product.find().sort({ createdAt: -1 }).lean();
+    let dbProducts = await Product.find().sort({ createdAt: -1 }).lean();
+    
+    // Auto-seed Atlas database on first connect so you never start with an empty catalog
+    if (!dbProducts || dbProducts.length === 0) {
+      await Product.insertMany(INITIAL_PRODUCTS);
+      dbProducts = await Product.find().sort({ createdAt: -1 }).lean();
+    }
+
     if (dbProducts && dbProducts.length > 0) {
       return dbProducts.map((p: any) => ({
         id: p._id ? p._id.toString() : p.slug,
@@ -24,7 +30,7 @@ export async function getLiveProducts(): Promise<ProductData[]> {
       }));
     }
   } catch (err) {
-    // MongoDB is in fallback mode
+    // If Mongo is temporarily unreachable, fallback to default catalog
   }
   return memoryProducts;
 }

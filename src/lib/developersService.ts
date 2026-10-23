@@ -2,7 +2,6 @@ import { DEVELOPER_ROLES, DeveloperRole } from '@/data/companyData';
 import { connectDB } from '@/lib/mongodb';
 import mongoose, { Schema } from 'mongoose';
 
-// Developer Model Schema
 const DeveloperSchema = new Schema(
   {
     title: { type: String, required: true },
@@ -22,7 +21,14 @@ let memoryDevelopers: DeveloperRole[] = [...DEVELOPER_ROLES];
 export async function getLiveDevelopers(): Promise<DeveloperRole[]> {
   try {
     await connectDB();
-    const dbDevs = await Developer.find().sort({ createdAt: -1 }).lean();
+    let dbDevs = await Developer.find().sort({ createdAt: -1 }).lean();
+    
+    // Auto-seed Atlas database on first connect so you never start with empty profiles
+    if (!dbDevs || dbDevs.length === 0) {
+      await Developer.insertMany(DEVELOPER_ROLES);
+      dbDevs = await Developer.find().sort({ createdAt: -1 }).lean();
+    }
+
     if (dbDevs && dbDevs.length > 0) {
       return dbDevs.map((d: any) => ({
         title: d.title,
