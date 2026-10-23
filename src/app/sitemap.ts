@@ -3,7 +3,9 @@ import { INITIAL_PRODUCTS } from '@/data/products';
 import { BLOG_POSTS, WORK_PROJECTS } from '@/data/companyData';
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://tansursoftware.com';
+ const baseUrl =
+  process.env.SITE_URL ||
+  "https://tan-five-chi.vercel.app";
 
   const productUrls = INITIAL_PRODUCTS.map((prod) => ({
     url: `${baseUrl}/products/${prod.slug}`,
