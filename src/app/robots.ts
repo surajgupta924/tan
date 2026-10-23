@@ -1,7 +1,9 @@
 import { MetadataRoute } from 'next';
 
 export default function robots(): MetadataRoute.Robots {
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://tansursoftware.com';
+const baseUrl =
+  process.env.SITE_URL ||
+  "https://tan-five-chi.vercel.app";
 
   return {
     rules: [
