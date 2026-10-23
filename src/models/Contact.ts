@@ -1,0 +1,27 @@
+import mongoose, { Schema, Document } from 'mongoose';
+
+export interface IContact extends Document {
+  name: string;
+  email: string;
+  phone: string;
+  subject?: string;
+  message: string;
+  type: 'contact' | 'demo';
+  productInterest?: string;
+  createdAt: Date;
+}
+
+const ContactSchema: Schema = new Schema(
+  {
+    name: { type: String, required: true },
+    email: { type: String, required: true },
+    phone: { type: String, required: true },
+    subject: { type: String, default: '' },
+    message: { type: String, required: true },
+    type: { type: String, enum: ['contact', 'demo'], default: 'contact' },
+    productInterest: { type: String, default: '' },
+  },
+  { timestamps: true }
+);
+
+export default mongoose.models.Contact || mongoose.model<IContact>('Contact', ContactSchema);
