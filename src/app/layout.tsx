@@ -16,7 +16,12 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = constructMetadata();
+export const metadata: Metadata = {
+  ...constructMetadata(),
+  verification: {
+    google: "google4ef2557449badc55",
+  },
+};
 
 export default function RootLayout({
   children,
@@ -38,7 +43,7 @@ export default function RootLayout({
         "height": 512
       },
       "slogan": "Ideas • Technology • Solutions • Growth",
-      "description": "Enterprise software company engineering Housing Society ERP, Payroll HRMS, School Automation, Travel Engines, and providing dedicated Next.js & Full-Stack developer hiring.",
+      "description": "Enterprise software company engineering Housing Society ERP, Real Estate CRM, Payroll HRMS, School Automation, Travel Engines, and providing dedicated Next.js & Full-Stack developer hiring.",
       "telephone": "+91-9876543210",
       "email": "contact@tansursoftware.com",
       "address": {
@@ -75,7 +80,7 @@ export default function RootLayout({
     {
       "@context": "https://schema.org",
       "@type": "SoftwareApplication",
-      "name": "Tansur ERP & Cloud Suite",
+      "name": "Tansur Real Estate & ERP Cloud Suite",
       "applicationCategory": "BusinessApplication",
       "operatingSystem": "Web, Cloud, Android, iOS",
       "offers": {
@@ -92,6 +97,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="scroll-smooth">
       <head>
+        <meta name="google-site-verification" content="google4ef2557449badc55" />
         {schemas.map((s, idx) => (
           <script
             key={idx}
