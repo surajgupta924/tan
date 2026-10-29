@@ -28,7 +28,6 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  // Enhanced 100% Comprehensive JSON-LD Schema: Organization, SoftwareApplication & WebSite
   const schemas = [
     {
       "@context": "https://schema.org",
