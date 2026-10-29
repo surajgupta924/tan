@@ -1,14 +1,20 @@
 import { MetadataRoute } from 'next';
 import { INITIAL_PRODUCTS } from '@/data/products';
+import { OFFICIAL_SERVICES } from '@/data/servicesData';
 import { BLOG_POSTS, WORK_PROJECTS } from '@/data/companyData';
 
 export default function sitemap(): MetadataRoute.Sitemap {
- const baseUrl =
-  process.env.SITE_URL ||
-  "https://tan-five-chi.vercel.app";
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://tansursoftware.com';
 
   const productUrls = INITIAL_PRODUCTS.map((prod) => ({
     url: `${baseUrl}/products/${prod.slug}`,
+    lastModified: new Date(),
+    changeFrequency: 'weekly' as const,
+    priority: 0.95,
+  }));
+
+  const serviceUrls = OFFICIAL_SERVICES.map((srv) => ({
+    url: `${baseUrl}/services/${srv.slug}`,
     lastModified: new Date(),
     changeFrequency: 'weekly' as const,
     priority: 0.95,
@@ -71,5 +77,5 @@ export default function sitemap(): MetadataRoute.Sitemap {
     },
   ];
 
-  return [...staticUrls, ...productUrls];
+  return [...staticUrls, ...productUrls, ...serviceUrls];
 }

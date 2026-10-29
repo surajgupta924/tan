@@ -1,10 +1,10 @@
 import { Metadata } from 'next';
 
-const siteUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://tansursoftware.com';
+const siteUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://tan-iota.vercel.app';
 
 export function constructMetadata({
-  title = 'Tansur Software Solutions | Next-Gen Enterprise Software, ERP & Tech Talent',
-  description = 'Tansur Software Solutions builds scalable custom software, multi-tenant SaaS, Housing Society ERP, Biometric Payroll HRMS, School Automation, and Travel Engines. Hire dedicated developers in 48 hours.',
+  title = 'Tansur Software Solutions | Enterprise Software, Real Estate ERP & Tech Talent',
+  description = 'Tansur Software Solutions crafts world-class ERPs, Society Management Software, Real Estate CRM, Payroll HRMS, School Automation, and Travel ERP solutions built for modern businesses.',
   image = '/logo.png',
   canonicalUrl,
   keywords = [],
@@ -22,19 +22,23 @@ export function constructMetadata({
     'Tansur Software',
     'Custom Software Development Company',
     'Society Management ERP Software',
+    'Real Estate CRM Software India',
     'Housing Society Billing Software India',
     'Payroll Management Software India',
     'Biometric HRMS Software',
     'School Management System ERP',
     'Travel Booking Engine Software',
+    'Website Development Company',
+    'Mobile App Development Company',
+    'Digital Marketing Agency',
+    'SEO Services Company',
+    'UI UX Design Agency',
     'Hire Dedicated Next.js Developers',
-    'Hire Full Stack Developers India',
-    'WhatsApp Business API Integration Services',
-    'SaaS Product Development Agency',
     'Enterprise ERP Solutions Noida Bengaluru'
   ];
 
   const mergedKeywords = Array.from(new Set([...defaultKeywords, ...keywords]));
+  const fullImageUrl = image.startsWith('http') ? image : `${siteUrl}${image}`;
 
   return {
     title: {
@@ -55,16 +59,24 @@ export function constructMetadata({
     alternates: {
       canonical: canonicalUrl || siteUrl,
     },
+    icons: {
+      icon: [
+        { url: '/favicon.ico' },
+        { url: '/icon.png', type: 'image/png' },
+      ],
+      apple: [{ url: '/apple-icon.png' }],
+      shortcut: ['/favicon.ico'],
+    },
     openGraph: {
       type: 'website',
       locale: 'en_US',
       url: canonicalUrl || siteUrl,
-      title,
+      title: title || 'Tansur Software Solutions | Enterprise Software & ERP',
       description,
       siteName: 'Tansur Software Solutions',
       images: [
         {
-          url: image,
+          url: fullImageUrl,
           width: 1200,
           height: 630,
           alt: 'Tansur Software Solutions - Innovative Technology. Powerful Solutions.',
@@ -73,9 +85,9 @@ export function constructMetadata({
     },
     twitter: {
       card: 'summary_large_image',
-      title,
+      title: title || 'Tansur Software Solutions',
       description,
-      images: [image],
+      images: [fullImageUrl],
       creator: '@tansursoftware',
       site: '@tansursoftware',
     },

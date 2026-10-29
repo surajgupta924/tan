@@ -4,12 +4,35 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { Menu, X, ArrowRight, Sparkles, ChevronDown, Building2, Users2, Layers, Calculator, GraduationCap, Plane, Stethoscope, Briefcase } from 'lucide-react';
+import { 
+  Menu, 
+  X, 
+  ArrowRight, 
+  Sparkles, 
+  ChevronDown, 
+  Building2, 
+  Users2, 
+  Layers, 
+  Calculator, 
+  GraduationCap, 
+  Plane, 
+  Stethoscope, 
+  Globe, 
+  Smartphone, 
+  TrendingUp, 
+  Search, 
+  Palette, 
+  Code2, 
+  Cpu, 
+  Server 
+} from 'lucide-react';
 import { INITIAL_PRODUCTS } from '@/data/products';
+import { OFFICIAL_SERVICES } from '@/data/servicesData';
 
 export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [productsDropdownOpen, setProductsDropdownOpen] = useState(false);
+  const [servicesDropdownOpen, setServicesDropdownOpen] = useState(false);
   const pathname = usePathname();
 
   if (pathname.startsWith('/admin')) {
@@ -25,6 +48,21 @@ export default function Navbar() {
       case 'school-management-system': return GraduationCap;
       case 'travel-management-system': return Plane;
       case 'hospital-clinic-management': return Stethoscope;
+      default: return Layers;
+    }
+  };
+
+  // Icons map for services submenu
+  const getServiceIcon = (slug: string) => {
+    switch (slug) {
+      case 'website-development': return Globe;
+      case 'mobile-development': return Smartphone;
+      case 'digital-marketing': return TrendingUp;
+      case 'seo-services': return Search;
+      case 'ui-ux-design': return Palette;
+      case 'custom-software-development': return Code2;
+      case 'ai-business-automation': return Cpu;
+      case 'cloud-deployment-maintenance': return Server;
       default: return Layers;
     }
   };
@@ -58,16 +96,74 @@ export default function Navbar() {
           {/* Desktop Navigation Links */}
           <nav className="hidden lg:flex items-center space-x-1 xl:space-x-2">
             
-            <Link
-              href="/services"
-              className={`px-3.5 py-2 rounded-xl text-sm font-semibold transition-all ${
-                pathname === '/services' ? 'text-blue-600 bg-blue-50/90' : 'text-slate-700 hover:text-blue-600 hover:bg-slate-100/70'
-              }`}
+            {/* SERVICES Mega Dropdown - MULTIPLE SUBMENUS IN A SINGLE ROW */}
+            <div 
+              className="relative"
+              onMouseEnter={() => setServicesDropdownOpen(true)}
+              onMouseLeave={() => setServicesDropdownOpen(false)}
             >
-              Services
-            </Link>
+              <Link
+                href="/services"
+                className={`px-3 py-2 rounded-xl text-sm font-semibold transition-all flex items-center gap-1.5 ${
+                  pathname.startsWith('/services') ? 'text-blue-600 bg-blue-50/90 font-bold' : 'text-slate-700 hover:text-blue-600 hover:bg-slate-100/70'
+                }`}
+              >
+                <span>Services</span>
+                <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${servicesDropdownOpen ? 'rotate-180 text-blue-600' : 'text-slate-400'}`} />
+              </Link>
 
-            {/* Products Mega Dropdown with Multiple Submenus */}
+              {/* Mega Dropdown Panel: ALL SERVICES SHOWN IN A SINGLE CONTINUOUS ROW */}
+              {servicesDropdownOpen && (
+                <div className="fixed left-0 right-0 top-20 z-50 pt-2 animate-in fade-in slide-in-from-top-2 duration-200">
+                  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="bg-white rounded-3xl border border-slate-200 shadow-2xl p-6">
+                      
+                      <div className="pb-3 mb-4 border-b border-slate-100 flex items-center justify-between">
+                        <span className="text-xs font-black uppercase tracking-wider text-slate-600 flex items-center gap-2">
+                          <Sparkles className="w-3.5 h-3.5 text-blue-600" />
+                          Our Core Engineering & Digital Services (Single-Row Portfolio)
+                        </span>
+                        <Link 
+                          href="/services"
+                          onClick={() => setServicesDropdownOpen(false)}
+                          className="text-xs font-bold text-blue-600 hover:underline"
+                        >
+                          View Full Services Studio &rarr;
+                        </Link>
+                      </div>
+
+                      {/* SINGLE ROW GRID: All services lined up neatly in 1 horizontal row */}
+                      <div className="grid grid-cols-8 gap-2">
+                        {OFFICIAL_SERVICES.map((srv) => {
+                          const Icon = getServiceIcon(srv.slug);
+                          return (
+                            <Link
+                              key={srv.id}
+                              href={`/services/${srv.slug}`}
+                              onClick={() => setServicesDropdownOpen(false)}
+                              className="flex flex-col items-center text-center p-3 rounded-2xl hover:bg-blue-50/80 transition-all group border border-transparent hover:border-blue-200"
+                            >
+                              <div className="w-11 h-11 rounded-2xl bg-blue-50 text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-all flex items-center justify-center mb-2 shadow-2xs">
+                                <Icon className="w-5 h-5" />
+                              </div>
+                              <h4 className="text-xs font-bold text-slate-900 group-hover:text-blue-600 leading-tight">
+                                {srv.title}
+                              </h4>
+                              <span className="text-[10px] text-cyan-600 font-semibold mt-1">
+                                {srv.badge}
+                              </span>
+                            </Link>
+                          );
+                        })}
+                      </div>
+
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* PRODUCTS Mega Dropdown */}
             <div 
               className="relative"
               onMouseEnter={() => setProductsDropdownOpen(true)}
@@ -75,7 +171,7 @@ export default function Navbar() {
             >
               <Link
                 href="/products"
-                className={`px-3.5 py-2 rounded-xl text-sm font-semibold transition-all flex items-center gap-1.5 ${
+                className={`px-3 py-2 rounded-xl text-sm font-semibold transition-all flex items-center gap-1.5 ${
                   pathname.startsWith('/products') ? 'text-blue-600 bg-blue-50/90 font-bold' : 'text-slate-700 hover:text-blue-600 hover:bg-slate-100/70'
                 }`}
               >
@@ -114,11 +210,9 @@ export default function Navbar() {
                             <Icon className="w-4 h-4" />
                           </div>
                           <div className="min-w-0">
-                            <div className="flex items-center gap-1.5">
-                              <h4 className="text-xs font-bold text-slate-900 group-hover:text-blue-600 transition-colors truncate">
-                                {prod.title}
-                              </h4>
-                            </div>
+                            <h4 className="text-xs font-bold text-slate-900 group-hover:text-blue-600 transition-colors truncate">
+                              {prod.title}
+                            </h4>
                             <p className="text-[11px] text-slate-500 line-clamp-1 mt-0.5">
                               {prod.tagline}
                             </p>
@@ -133,7 +227,7 @@ export default function Navbar() {
 
             <Link
               href="/hire-developers"
-              className={`px-3.5 py-2 rounded-xl text-sm font-semibold transition-all flex items-center gap-1.5 ${
+              className={`px-3 py-2 rounded-xl text-sm font-semibold transition-all flex items-center gap-1.5 ${
                 pathname === '/hire-developers' ? 'text-blue-600 bg-blue-50/90' : 'text-slate-700 hover:text-blue-600 hover:bg-slate-100/70'
               }`}
             >
@@ -145,7 +239,7 @@ export default function Navbar() {
 
             <Link
               href="/our-works"
-              className={`px-3.5 py-2 rounded-xl text-sm font-semibold transition-all ${
+              className={`px-3 py-2 rounded-xl text-sm font-semibold transition-all ${
                 pathname === '/our-works' ? 'text-blue-600 bg-blue-50/90' : 'text-slate-700 hover:text-blue-600 hover:bg-slate-100/70'
               }`}
             >
@@ -154,7 +248,7 @@ export default function Navbar() {
 
             <Link
               href="/about"
-              className={`px-3.5 py-2 rounded-xl text-sm font-semibold transition-all ${
+              className={`px-3 py-2 rounded-xl text-sm font-semibold transition-all ${
                 pathname === '/about' ? 'text-blue-600 bg-blue-50/90' : 'text-slate-700 hover:text-blue-600 hover:bg-slate-100/70'
               }`}
             >
@@ -163,7 +257,7 @@ export default function Navbar() {
 
             <Link
               href="/blog"
-              className={`px-3.5 py-2 rounded-xl text-sm font-semibold transition-all ${
+              className={`px-3 py-2 rounded-xl text-sm font-semibold transition-all ${
                 pathname === '/blog' ? 'text-blue-600 bg-blue-50/90' : 'text-slate-700 hover:text-blue-600 hover:bg-slate-100/70'
               }`}
             >
@@ -172,7 +266,7 @@ export default function Navbar() {
 
             <Link
               href="/contact"
-              className={`px-3.5 py-2 rounded-xl text-sm font-semibold transition-all ${
+              className={`px-3 py-2 rounded-xl text-sm font-semibold transition-all ${
                 pathname === '/contact' ? 'text-blue-600 bg-blue-50/90' : 'text-slate-700 hover:text-blue-600 hover:bg-slate-100/70'
               }`}
             >
@@ -180,7 +274,7 @@ export default function Navbar() {
             </Link>
           </nav>
 
-          {/* Action CTA - NO LOGIN BUTTON (Protected) */}
+          {/* Action CTA - NO LOGIN BUTTON */}
           <div className="hidden lg:flex items-center space-x-3">
             <Link
               href="/book-demo"
@@ -208,13 +302,29 @@ export default function Navbar() {
       {/* Mobile Menu Dropdown */}
       {mobileMenuOpen && (
         <div className="lg:hidden border-b border-slate-200 bg-white px-5 pt-3 pb-6 space-y-2 shadow-2xl animate-in slide-in-from-top duration-200 max-h-[85vh] overflow-y-auto">
-          <Link
-            href="/services"
-            onClick={() => setMobileMenuOpen(false)}
-            className="block px-4 py-2.5 rounded-xl text-sm font-semibold text-slate-800 hover:bg-blue-50"
-          >
-            Services
-          </Link>
+          
+          {/* Services Mobile Submenu Accordion */}
+          <div className="border border-slate-100 rounded-2xl p-3 bg-slate-50/70">
+            <Link
+              href="/services"
+              onClick={() => setMobileMenuOpen(false)}
+              className="text-xs font-black uppercase tracking-wider text-blue-700 block mb-2"
+            >
+              Our Services Portfolio:
+            </Link>
+            <div className="grid grid-cols-2 gap-1.5 pl-2 border-l-2 border-blue-200">
+              {OFFICIAL_SERVICES.map((srv) => (
+                <Link
+                  key={srv.id}
+                  href={`/services/${srv.slug}`}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="text-xs font-medium text-slate-700 hover:text-blue-600 py-1 truncate"
+                >
+                  • {srv.title}
+                </Link>
+              ))}
+            </div>
+          </div>
 
           {/* Mobile Products Submenu Accordion */}
           <div className="border border-slate-100 rounded-2xl p-3 bg-slate-50/70">
@@ -223,7 +333,7 @@ export default function Navbar() {
               onClick={() => setMobileMenuOpen(false)}
               className="text-xs font-black uppercase tracking-wider text-blue-700 block mb-2"
             >
-              Our Software Products ({INITIAL_PRODUCTS.length}):
+              Our Software Products:
             </Link>
             <div className="space-y-1.5 pl-2 border-l-2 border-blue-200">
               {INITIAL_PRODUCTS.map((prod) => (
