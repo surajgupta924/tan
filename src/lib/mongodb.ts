@@ -18,9 +18,9 @@ if (!global.mongooseCache) {
 }
 
 export async function connectDB() {
-  // If no Mongo URI provided or placeholder in production, skip immediately to prevent hanging
-  if (!MONGODB_URI || MONGODB_URI.includes('127.0.0.1') || MONGODB_URI.includes('Tansur2025Secure')) {
-    throw new Error('No valid remote MONGODB_URI set, using high-speed static/memory store');
+  // If no Mongo URI provided, throw explicit error so caller can fallback to local disk store
+  if (!MONGODB_URI || MONGODB_URI.trim() === '') {
+    throw new Error('NO_MONGODB_URI');
   }
 
   if (cached.conn) {
@@ -30,15 +30,17 @@ export async function connectDB() {
   if (!cached.promise) {
     const opts = {
       bufferCommands: false,
-      serverSelectionTimeoutMS: 2000, // FAST FAIL: don't wait 30 seconds if DB is unreachable
-      connectTimeoutMS: 2000,
-      socketTimeoutMS: 5000,
+      serverSelectionTimeoutMS: 5000,
+      connectTimeoutMS: 5000,
+      socketTimeoutMS: 10000,
     };
 
     cached.promise = mongoose.connect(MONGODB_URI, opts).then((m) => {
+      console.log('MongoDB Atlas Connected Successfully');
       return m;
     }).catch((err) => {
       cached.promise = null;
+      console.warn('MongoDB connection notice:', err.message);
       throw err;
     });
   }

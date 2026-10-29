@@ -1,9 +1,12 @@
 import { NextResponse } from 'next/server';
 import { connectDB } from '@/lib/mongodb';
 import Contact from '@/models/Contact';
-
-// Persistent in-memory storage fallback so real data is never lost even if DB is in connecting state
-let persistentContacts: any[] = [];
+import { 
+  readContactsFromFile, 
+  writeContactToFile, 
+  deleteContactFromFile, 
+  StoredContact 
+} from '@/lib/contactStorage';
 
 export async function POST(req: Request) {
   try {
@@ -17,42 +20,50 @@ export async function POST(req: Request) {
       );
     }
 
-    const newRecord = {
-      _id: 'lead-' + Date.now(),
-      name,
-      email: email || 'N/A',
-      phone,
-      subject: subject || 'New Website Inquiry',
-      message: message || (type === 'demo' ? `Demo booking request for ${productInterest || 'Software ERP'}` : 'General Inquiry'),
-      type: type || 'contact',
-      productInterest: productInterest || 'Software ERP',
-      createdAt: new Date().toISOString(),
+    // Exact ISO timestamp with full Indian local date & time
+    const exactTimestamp = new Date().toISOString();
+
+    const newLead: StoredContact = {
+      _id: 'lead_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
+      name: name.trim(),
+      email: (email || 'N/A').trim(),
+      phone: phone.trim(),
+      subject: (subject || 'New Website Project Inquiry').trim(),
+      message: (message || (type === 'demo' ? `Demo booking request for ${productInterest || 'Enterprise Software ERP'}` : 'Project Inquiry')).trim(),
+      type: type === 'demo' ? 'demo' : 'contact',
+      productInterest: (productInterest || 'Enterprise Software Solution').trim(),
+      createdAt: exactTimestamp,
     };
 
-    // Store in live memory fallback
-    persistentContacts.unshift(newRecord);
-
-    // Also attempt MongoDB persistent write
+    // 1. Try saving in MongoDB Atlas (if connection string configured)
+    let savedToMongo = false;
     try {
       await connectDB();
-      const saved = await Contact.create({
-        name,
-        email: email || 'N/A',
-        phone,
-        subject: newRecord.subject,
-        message: newRecord.message,
-        type: newRecord.type,
-        productInterest: newRecord.productInterest,
+      const mongoRecord = await Contact.create({
+        name: newLead.name,
+        email: newLead.email,
+        phone: newLead.phone,
+        subject: newLead.subject,
+        message: newLead.message,
+        type: newLead.type,
+        productInterest: newLead.productInterest,
       });
-      newRecord._id = saved._id.toString();
-    } catch (dbError) {
-      console.warn("MongoDB connection note: Saved lead in persistent memory store");
+      if (mongoRecord && mongoRecord._id) {
+        newLead._id = mongoRecord._id.toString();
+        savedToMongo = true;
+      }
+    } catch (mongoErr: any) {
+      console.warn("Notice: MongoDB Atlas not yet configured or connecting, using persistent fallback storage.");
     }
+
+    // 2. ALWAYS save in persistent disk/memory storage as well
+    writeContactToFile(newLead);
 
     return NextResponse.json({
       success: true,
-      message: 'Inquiry received successfully! Saved in database.',
-      data: newRecord,
+      message: 'Inquiry saved successfully with exact timestamp!',
+      data: newLead,
+      storage: savedToMongo ? 'MongoDB Atlas' : 'Persistent Storage',
     });
   } catch (error: any) {
     return NextResponse.json(
@@ -64,30 +75,60 @@ export async function POST(req: Request) {
 
 export async function GET() {
   try {
-    await connectDB();
-    const dbContacts = await Contact.find().sort({ createdAt: -1 }).lean();
-    if (dbContacts && dbContacts.length > 0) {
-      return NextResponse.json({ success: true, data: dbContacts });
-    }
-  } catch (error: any) {
-    // Database fallback
-  }
-
-  // Return real submissions captured
-  return NextResponse.json({
-    success: true,
-    data: persistentContacts.length > 0 ? persistentContacts : [
-      {
-        _id: "demo-lead-1",
-        name: "Vikram Malhotra",
-        email: "vikram@greenvalley.in",
-        phone: "+91 98765 43210",
-        subject: "Real Estate & Housing Society ERP Inquiry",
-        message: "Requirement for 800 flats gated community maintenance and gate pass app.",
-        type: "demo",
-        productInterest: "Society & Apartment Management ERP",
-        createdAt: new Date().toISOString()
+    // 1. First try reading from MongoDB Atlas
+    try {
+      await connectDB();
+      const mongoContacts = await Contact.find().sort({ createdAt: -1 }).lean();
+      if (mongoContacts && mongoContacts.length > 0) {
+        const formatted = mongoContacts.map((c: any) => ({
+          _id: c._id.toString(),
+          name: c.name,
+          email: c.email || 'N/A',
+          phone: c.phone,
+          subject: c.subject || 'Website Inquiry',
+          message: c.message,
+          type: c.type || 'contact',
+          productInterest: c.productInterest || 'Software ERP',
+          createdAt: c.createdAt ? new Date(c.createdAt).toISOString() : new Date().toISOString(),
+        }));
+        return NextResponse.json({ success: true, data: formatted, source: 'MongoDB Atlas' });
       }
-    ]
-  });
+    } catch (dbError) {
+      // Fall through to disk storage
+    }
+
+    // 2. Read from persistent disk storage
+    const diskContacts = readContactsFromFile();
+    return NextResponse.json({ 
+      success: true, 
+      data: diskContacts, 
+      source: 'Persistent Storage' 
+    });
+  } catch (error: any) {
+    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+  }
+}
+
+export async function DELETE(req: Request) {
+  try {
+    const { searchParams } = new URL(req.url);
+    const id = searchParams.get('id');
+
+    if (!id) {
+      return NextResponse.json({ success: false, error: 'Lead ID required' }, { status: 400 });
+    }
+
+    // Delete from MongoDB Atlas
+    try {
+      await connectDB();
+      await Contact.findByIdAndDelete(id);
+    } catch (e) {}
+
+    // Delete from persistent disk file
+    deleteContactFromFile(id);
+
+    return NextResponse.json({ success: true, message: 'Lead deleted successfully' });
+  } catch (error: any) {
+    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+  }
 }

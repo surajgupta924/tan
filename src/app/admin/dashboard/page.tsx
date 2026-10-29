@@ -16,16 +16,17 @@ import {
   Clock, 
   Sparkles, 
   CheckCircle2, 
-  LayoutDashboard,
-  Search,
-  ChevronRight,
-  Filter,
-  Eye
+  Search, 
+  ChevronRight, 
+  Calendar,
+  MessageSquare,
+  ShieldCheck,
+  RefreshCw,
+  FileSpreadsheet
 } from 'lucide-react';
 
 export default function AdminDashboardPage() {
   const router = useRouter();
-  // 3 Distinct Sidebar Pages / Sections
   const [activeSection, setActiveSection] = useState<'contacts' | 'products' | 'developers'>('contacts');
 
   const [contacts, setContacts] = useState<any[]>([]);
@@ -34,13 +35,14 @@ export default function AdminDashboardPage() {
   const [loading, setLoading] = useState(true);
   const [notification, setNotification] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
+  const [storageSource, setStorageSource] = useState<string>('');
 
   // Add Product Form Modal
   const [showAddProduct, setShowAddProduct] = useState(false);
   const [newProduct, setNewProduct] = useState({
     title: '',
     tagline: '',
-    category: 'ERP Systems',
+    category: 'Real Estate / ERP',
     description: '',
     features: '',
     dummyImage: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=800&q=80',
@@ -84,7 +86,10 @@ export default function AdminDashboardPage() {
         devsRes.json(),
       ]);
 
-      if (cData.success) setContacts(cData.data || []);
+      if (cData.success) {
+        setContacts(cData.data || []);
+        if (cData.source) setStorageSource(cData.source);
+      }
       if (pData.success) setProducts(pData.data || []);
       if (dData.success) setDevelopers(dData.data || []);
     } catch (err) {
@@ -102,7 +107,45 @@ export default function AdminDashboardPage() {
     router.push('/admin/login');
   };
 
-  // Handle Add Product
+  // Format exact human date & time (e.g. 30 Oct 2026, 04:30 AM)
+  const formatExactDateTime = (dateString: string) => {
+    try {
+      const date = new Date(dateString);
+      return {
+        date: date.toLocaleDateString('en-IN', {
+          day: '2-digit',
+          month: 'short',
+          year: 'numeric'
+        }),
+        time: date.toLocaleTimeString('en-IN', {
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+          hour12: true
+        })
+      };
+    } catch (e) {
+      return { date: dateString, time: '' };
+    }
+  };
+
+  // Delete Contact Lead
+  const handleDeleteContact = async (id: string, name: string) => {
+    if (!confirm(`Are you sure you want to delete lead from "${name}"?`)) return;
+    try {
+      const res = await fetch(`/api/contact?id=${encodeURIComponent(id)}`, { method: 'DELETE' });
+      const data = await res.json();
+      if (data.success) {
+        setNotification('Lead deleted successfully.');
+        setTimeout(() => setNotification(''), 3000);
+        fetchData();
+      }
+    } catch (e) {
+      alert('Failed to delete lead');
+    }
+  };
+
+  // Add Product
   const handleAddProduct = async (e: React.FormEvent) => {
     e.preventDefault();
     setProductSaving(true);
@@ -118,13 +161,13 @@ export default function AdminDashboardPage() {
         setNewProduct({
           title: '',
           tagline: '',
-          category: 'ERP Systems',
+          category: 'Real Estate / ERP',
           description: '',
           features: '',
           dummyImage: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=800&q=80',
           badge: 'Enterprise',
         });
-        setNotification('Product added successfully! Now live on /products and homepage.');
+        setNotification('Product added successfully! Now live on /products and website.');
         setTimeout(() => setNotification(''), 4000);
         fetchData();
       }
@@ -135,7 +178,7 @@ export default function AdminDashboardPage() {
     }
   };
 
-  // Handle Add Developer
+  // Add Developer
   const handleAddDeveloper = async (e: React.FormEvent) => {
     e.preventDefault();
     setDeveloperSaving(true);
@@ -193,7 +236,7 @@ export default function AdminDashboardPage() {
     } catch (e) {}
   };
 
-  // Filtered contacts for DataTable
+  // Filtered contacts
   const filteredContacts = contacts.filter((c) => {
     const term = searchTerm.toLowerCase();
     return (
@@ -216,12 +259,15 @@ export default function AdminDashboardPage() {
           </div>
           <div>
             <h1 className="font-black text-base text-white tracking-tight flex items-center gap-2">
-              <span>Tansur Control Center</span>
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-950 text-emerald-400 border border-emerald-800">
-                Connected
+              <span>Tansur Admin Control Center</span>
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-950 text-emerald-400 border border-emerald-800 flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
+                Real-Time Backend Live
               </span>
             </h1>
-            <span className="text-[11px] text-cyan-400">Master Administration Suite</span>
+            <span className="text-[11px] text-cyan-400">
+              Storage: {storageSource || 'Live Database'}
+            </span>
           </div>
         </div>
 
@@ -229,14 +275,14 @@ export default function AdminDashboardPage() {
           <a
             href="/"
             target="_blank"
-            className="hidden sm:inline-flex items-center gap-1.5 text-xs font-semibold text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 px-3 py-1.5 rounded-xl border border-slate-700 transition-colors"
+            className="hidden sm:inline-flex items-center gap-1.5 text-xs font-semibold text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 px-3.5 py-2 rounded-xl border border-slate-700 transition-colors"
           >
-            <span>Public Site</span>
+            <span>Live Website</span>
             <ExternalLink className="w-3.5 h-3.5 text-cyan-400" />
           </a>
           <button
             onClick={handleLogout}
-            className="inline-flex items-center gap-1.5 text-xs font-bold text-red-400 hover:text-red-300 bg-red-950/40 hover:bg-red-900/40 px-3.5 py-1.5 rounded-xl border border-red-900/50 transition-colors"
+            className="inline-flex items-center gap-1.5 text-xs font-bold text-red-400 hover:text-red-300 bg-red-950/40 hover:bg-red-900/40 px-3.5 py-2 rounded-xl border border-red-900/50 transition-colors"
           >
             <LogOut className="w-3.5 h-3.5" />
             <span>Logout</span>
@@ -244,18 +290,17 @@ export default function AdminDashboardPage() {
         </div>
       </header>
 
-      {/* Main Layout: Aside Sidebar + Content Studio */}
+      {/* Main Layout: Aside Sidebar + Content */}
       <div className="flex-1 flex flex-col md:flex-row">
         
-        {/* ASIDE SIDEBAR (3 Distinct Navigation Pages) */}
+        {/* ASIDE SIDEBAR */}
         <aside className="w-full md:w-64 bg-slate-900/90 border-r border-slate-800 p-4 space-y-6 flex-shrink-0">
           <div>
             <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 px-3 block mb-2">
               Navigation Pages
             </span>
-            <nav className="space-y-1">
+            <nav className="space-y-1.5">
               
-              {/* Page 1: Contact Leads & DataTable */}
               <button
                 onClick={() => setActiveSection('contacts')}
                 className={`w-full flex items-center justify-between px-3.5 py-3 rounded-2xl text-xs font-bold transition-all text-left ${
@@ -275,7 +320,6 @@ export default function AdminDashboardPage() {
                 </span>
               </button>
 
-              {/* Page 2: Manage Products */}
               <button
                 onClick={() => setActiveSection('products')}
                 className={`w-full flex items-center justify-between px-3.5 py-3 rounded-2xl text-xs font-bold transition-all text-left ${
@@ -295,7 +339,6 @@ export default function AdminDashboardPage() {
                 </span>
               </button>
 
-              {/* Page 3: Hire Developers Manager */}
               <button
                 onClick={() => setActiveSection('developers')}
                 className={`w-full flex items-center justify-between px-3.5 py-3 rounded-2xl text-xs font-bold transition-all text-left ${
@@ -321,17 +364,20 @@ export default function AdminDashboardPage() {
           {/* Quick Metrics Card */}
           <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-3">
             <span className="text-[10px] font-black uppercase tracking-widest text-cyan-400 block">
-              System Overview
+              Real Data Counter
             </span>
             <div className="grid grid-cols-2 gap-2 text-center">
-              <div className="p-2 rounded-xl bg-slate-900 border border-slate-800">
-                <div className="text-lg font-black text-white">{contacts.length}</div>
-                <div className="text-[10px] text-slate-400">Total Leads</div>
+              <div className="p-2.5 rounded-xl bg-slate-900 border border-slate-800">
+                <div className="text-xl font-black text-white">{contacts.length}</div>
+                <div className="text-[10px] text-slate-400 mt-0.5">Real Leads</div>
               </div>
-              <div className="p-2 rounded-xl bg-slate-900 border border-slate-800">
-                <div className="text-lg font-black text-cyan-400">{products.length}</div>
-                <div className="text-[10px] text-slate-400">Live Products</div>
+              <div className="p-2.5 rounded-xl bg-slate-900 border border-slate-800">
+                <div className="text-xl font-black text-cyan-400">{products.length}</div>
+                <div className="text-[10px] text-slate-400 mt-0.5">Products</div>
               </div>
+            </div>
+            <div className="text-[11px] text-slate-500 pt-1 text-center font-medium">
+              Auto-timestamps with Indian Standard Time (IST)
             </div>
           </div>
         </aside>
@@ -339,7 +385,7 @@ export default function AdminDashboardPage() {
         {/* MAIN STUDIO CONTENT AREA */}
         <main className="flex-1 p-6 md:p-8 overflow-y-auto">
           
-          {/* Global Notification Toast */}
+          {/* Notification Toast */}
           {notification && (
             <div className="mb-6 p-4 bg-emerald-950 border border-emerald-800 rounded-2xl text-emerald-300 text-xs sm:text-sm flex items-center gap-3 shadow-lg animate-in fade-in duration-200">
               <CheckCircle2 className="w-5 h-5 flex-shrink-0 text-emerald-400" />
@@ -347,14 +393,19 @@ export default function AdminDashboardPage() {
             </div>
           )}
 
-          {/* ================= PAGE 1: CONTACTS INQUIRIES DATATABLE ================= */}
+          {/* ================= PAGE 1: REAL CONTACTS DATATABLE WITH EXACT TIME ================= */}
           {activeSection === 'contacts' && (
             <div className="space-y-6">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
-                  <h2 className="text-2xl font-black text-white">Contact & Demo Inquiries</h2>
+                  <h2 className="text-2xl font-black text-white flex items-center gap-3">
+                    <span>Client Inquiries & Demo Leads</span>
+                    <span className="text-xs font-bold text-slate-400 bg-slate-900 px-3 py-1 rounded-full border border-slate-800">
+                      Total: {contacts.length} Records
+                    </span>
+                  </h2>
                   <p className="text-xs text-slate-400 mt-1">
-                    Structured relational DataTable showing submissions received from public contact forms.
+                    Every inquiry submitted on the website is recorded in real-time with the exact date & timestamp.
                   </p>
                 </div>
 
@@ -364,101 +415,150 @@ export default function AdminDashboardPage() {
                       type="text"
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
-                      placeholder="Search name, phone, product..."
-                      className="w-64 pl-9 pr-4 py-2 bg-slate-900 border border-slate-800 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="Search name, phone, email, project..."
+                      className="w-64 pl-9 pr-4 py-2.5 bg-slate-900 border border-slate-800 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
-                    <Search className="w-4 h-4 text-slate-500 absolute left-3 top-2.5" />
+                    <Search className="w-4 h-4 text-slate-500 absolute left-3 top-3" />
                   </div>
                   <button
                     onClick={fetchData}
-                    className="px-3.5 py-2 bg-slate-900 hover:bg-slate-800 text-xs font-bold text-slate-300 rounded-xl border border-slate-800"
+                    className="flex items-center gap-1.5 px-4 py-2.5 bg-slate-900 hover:bg-slate-800 text-xs font-bold text-slate-300 rounded-xl border border-slate-800 transition-colors"
                   >
-                    Refresh
+                    <RefreshCw className="w-3.5 h-3.5" />
+                    <span>Refresh</span>
                   </button>
                 </div>
               </div>
 
-              {/* DATATABLE */}
-              <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
+              {/* REAL DATATABLE */}
+              <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-2xl">
                 <div className="overflow-x-auto">
                   <table className="w-full text-left text-xs">
                     <thead className="bg-slate-950 text-slate-400 uppercase tracking-wider text-[10px] font-black border-b border-slate-800">
                       <tr>
-                        <th className="py-3.5 px-4">Date / Time</th>
-                        <th className="py-3.5 px-4">Name</th>
-                        <th className="py-3.5 px-4">Phone / WhatsApp</th>
-                        <th className="py-3.5 px-4">Email</th>
-                        <th className="py-3.5 px-4">Project / Product Type</th>
-                        <th className="py-3.5 px-4">Message / Requirements</th>
-                        <th className="py-3.5 px-4 text-center">Action</th>
+                        <th className="py-4 px-4">Exact Date & Time</th>
+                        <th className="py-4 px-4">Client Name</th>
+                        <th className="py-4 px-4">Phone / WhatsApp</th>
+                        <th className="py-4 px-4">Email</th>
+                        <th className="py-4 px-4">Project / Requirement</th>
+                        <th className="py-4 px-4">Message / Pain Points</th>
+                        <th className="py-4 px-4 text-center">Action</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-800/80">
                       {loading ? (
                         <tr>
-                          <td colSpan={7} className="py-12 text-center text-slate-500">
-                            Loading DataTable records...
+                          <td colSpan={7} className="py-16 text-center text-slate-500">
+                            Loading real-time records...
                           </td>
                         </tr>
                       ) : filteredContacts.length === 0 ? (
                         <tr>
-                          <td colSpan={7} className="py-12 text-center text-slate-500">
-                            No contact inquiries found matching search criteria.
+                          <td colSpan={7} className="py-16 text-center text-slate-500">
+                            {contacts.length === 0 
+                              ? "No contact submissions yet. Fill out the contact form on your website to see real data appear here instantly!" 
+                              : "No records found matching search."}
                           </td>
                         </tr>
                       ) : (
-                        filteredContacts.map((c, idx) => (
-                          <tr key={c._id || idx} className="hover:bg-slate-800/40 transition-colors">
-                            <td className="py-3.5 px-4 whitespace-nowrap text-slate-400 font-mono text-[11px]">
-                              {new Date(c.createdAt).toLocaleDateString()} <br />
-                              <span className="text-[10px] text-slate-500">{new Date(c.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-                            </td>
-                            <td className="py-3.5 px-4 font-bold text-white whitespace-nowrap">
-                              {c.name}
-                            </td>
-                            <td className="py-3.5 px-4 whitespace-nowrap">
-                              <a
-                                href={`https://wa.me/${c.phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(`Hi ${c.name}, contacting you from Tansur Software Solutions regarding your inquiry.`)}`}
-                                target="_blank"
-                                rel="noreferrer"
-                                className="font-bold text-emerald-400 hover:underline flex items-center gap-1.5"
-                              >
-                                <Phone className="w-3.5 h-3.5" />
-                                <span>{c.phone}</span>
-                              </a>
-                            </td>
-                            <td className="py-3.5 px-4 text-slate-300 whitespace-nowrap">
-                              {c.email || 'N/A'}
-                            </td>
-                            <td className="py-3.5 px-4">
-                              <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-blue-950 text-blue-300 border border-blue-800 whitespace-nowrap">
-                                {c.productInterest || 'General System'}
-                              </span>
-                            </td>
-                            <td className="py-3.5 px-4 text-slate-400 max-w-xs truncate" title={c.message}>
-                              {c.message}
-                            </td>
-                            <td className="py-3.5 px-4 text-center whitespace-nowrap">
-                              <a
-                                href={`https://wa.me/${c.phone.replace(/[^0-9]/g, '')}`}
-                                target="_blank"
-                                rel="noreferrer"
-                                className="px-3 py-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-lg text-[10px] transition-colors"
-                              >
-                                Chat WhatsApp
-                              </a>
-                            </td>
-                          </tr>
-                        ))
+                        filteredContacts.map((c, idx) => {
+                          const formattedTime = formatExactDateTime(c.createdAt);
+                          return (
+                            <tr key={c._id || idx} className="hover:bg-slate-800/50 transition-colors">
+                              
+                              {/* Exact Date & Time */}
+                              <td className="py-4 px-4 whitespace-nowrap">
+                                <div className="flex items-center gap-2">
+                                  <Clock className="w-3.5 h-3.5 text-cyan-400 flex-shrink-0" />
+                                  <div>
+                                    <span className="font-bold text-white text-[11px] block">{formattedTime.date}</span>
+                                    <span className="text-[10px] text-cyan-300 font-mono">{formattedTime.time}</span>
+                                  </div>
+                                </div>
+                              </td>
+
+                              {/* Client Name & Tag */}
+                              <td className="py-4 px-4 font-bold text-white whitespace-nowrap">
+                                <div className="flex items-center gap-2">
+                                  <span>{c.name}</span>
+                                  {c.type === 'demo' && (
+                                    <span className="px-1.5 py-0.2 text-[9px] font-black uppercase text-emerald-400 bg-emerald-950 border border-emerald-800 rounded">
+                                      Demo
+                                    </span>
+                                  )}
+                                </div>
+                              </td>
+
+                              {/* Phone with Click-to-WhatsApp */}
+                              <td className="py-4 px-4 whitespace-nowrap">
+                                <a
+                                  href={`https://wa.me/${c.phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(`Hi ${c.name}, I am contacting you from Tansur Software Solutions regarding your inquiry for ${c.productInterest || 'software solutions'}.`)}`}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="font-bold text-emerald-400 hover:text-emerald-300 hover:underline flex items-center gap-1.5"
+                                >
+                                  <Phone className="w-3.5 h-3.5" />
+                                  <span>{c.phone}</span>
+                                </a>
+                              </td>
+
+                              {/* Email */}
+                              <td className="py-4 px-4 text-slate-300 whitespace-nowrap">
+                                <a href={`mailto:${c.email}`} className="hover:text-cyan-400">
+                                  {c.email || 'N/A'}
+                                </a>
+                              </td>
+
+                              {/* Project Interest */}
+                              <td className="py-4 px-4">
+                                <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-blue-950 text-blue-300 border border-blue-800 whitespace-nowrap inline-block">
+                                  {c.productInterest || 'Software ERP'}
+                                </span>
+                              </td>
+
+                              {/* Full Message */}
+                              <td className="py-4 px-4 text-slate-300 max-w-xs break-words" title={c.message}>
+                                <div className="line-clamp-2 text-xs">
+                                  {c.message}
+                                </div>
+                              </td>
+
+                              {/* Actions */}
+                              <td className="py-4 px-4 text-center whitespace-nowrap">
+                                <div className="flex items-center justify-center gap-2">
+                                  <a
+                                    href={`https://wa.me/${c.phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(`Hi ${c.name}, I am contacting you from Tansur Software Solutions.`)}`}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-lg text-[10px] transition-colors"
+                                  >
+                                    WhatsApp
+                                  </a>
+                                  <button
+                                    onClick={() => handleDeleteContact(c._id, c.name)}
+                                    className="p-1 text-slate-500 hover:text-red-400 transition-colors"
+                                    title="Delete Lead"
+                                  >
+                                    <Trash2 className="w-3.5 h-3.5" />
+                                  </button>
+                                </div>
+                              </td>
+
+                            </tr>
+                          );
+                        })
                       )}
                     </tbody>
                   </table>
                 </div>
 
-                {/* DataTable Footer count */}
-                <div className="bg-slate-950/80 px-4 py-3 border-t border-slate-800 text-[11px] text-slate-400 flex items-center justify-between">
-                  <span>Showing {filteredContacts.length} of {contacts.length} entries</span>
-                  <span className="text-cyan-400 font-semibold">Real-Time MongoDB Sync</span>
+                {/* DataTable Footer */}
+                <div className="bg-slate-950 px-4 py-3 border-t border-slate-800 text-[11px] text-slate-400 flex items-center justify-between">
+                  <span>Displaying {filteredContacts.length} of {contacts.length} real inquiries</span>
+                  <span className="text-emerald-400 font-semibold flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
+                    Live Synchronized
+                  </span>
                 </div>
               </div>
             </div>
