@@ -39,7 +39,6 @@ export default function Navbar() {
     return null;
   }
 
-  // Icons map for product submenu
   const getProductIcon = (slug: string) => {
     switch (slug) {
       case 'real-estate-crm-software': return Building2;
@@ -52,7 +51,6 @@ export default function Navbar() {
     }
   };
 
-  // Icons map for services submenu
   const getServiceIcon = (slug: string) => {
     switch (slug) {
       case 'website-development': return Globe;
@@ -72,7 +70,7 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
           
-          {/* Logo with 3D Brand Badge */}
+          {/* Logo */}
           <Link href="/" className="flex items-center gap-3.5 group">
             <div className="relative w-12 h-12 flex-shrink-0 transition-transform group-hover:scale-105 duration-200 drop-shadow-xs">
               <Image
@@ -96,7 +94,7 @@ export default function Navbar() {
           {/* Desktop Navigation Links */}
           <nav className="hidden lg:flex items-center space-x-1 xl:space-x-2">
             
-            {/* SERVICES Mega Dropdown - MULTIPLE SUBMENUS IN A SINGLE ROW */}
+            {/* SERVICES Dropdown - Exact same 2-column card style as Products */}
             <div 
               className="relative"
               onMouseEnter={() => setServicesDropdownOpen(true)}
@@ -104,7 +102,7 @@ export default function Navbar() {
             >
               <Link
                 href="/services"
-                className={`px-3 py-2 rounded-xl text-sm font-semibold transition-all flex items-center gap-1.5 ${
+                className={`px-3.5 py-2 rounded-xl text-sm font-semibold transition-all flex items-center gap-1.5 ${
                   pathname.startsWith('/services') ? 'text-blue-600 bg-blue-50/90 font-bold' : 'text-slate-700 hover:text-blue-600 hover:bg-slate-100/70'
                 }`}
               >
@@ -112,58 +110,53 @@ export default function Navbar() {
                 <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${servicesDropdownOpen ? 'rotate-180 text-blue-600' : 'text-slate-400'}`} />
               </Link>
 
-              {/* Mega Dropdown Panel: ALL SERVICES SHOWN IN A SINGLE CONTINUOUS ROW */}
+              {/* Exact same 2-column menu layout as Products */}
               {servicesDropdownOpen && (
-                <div className="fixed left-0 right-0 top-20 z-50 pt-2 animate-in fade-in slide-in-from-top-2 duration-200">
-                  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="bg-white rounded-3xl border border-slate-200 shadow-2xl p-6">
-                      
-                      <div className="pb-3 mb-4 border-b border-slate-100 flex items-center justify-between">
-                        <span className="text-xs font-black uppercase tracking-wider text-slate-600 flex items-center gap-2">
-                          <Sparkles className="w-3.5 h-3.5 text-blue-600" />
-                          Our Core Engineering & Digital Services (Single-Row Portfolio)
-                        </span>
-                        <Link 
-                          href="/services"
-                          onClick={() => setServicesDropdownOpen(false)}
-                          className="text-xs font-bold text-blue-600 hover:underline"
-                        >
-                          View Full Services Studio &rarr;
-                        </Link>
-                      </div>
-
-                      {/* SINGLE ROW GRID: All services lined up neatly in 1 horizontal row */}
-                      <div className="grid grid-cols-8 gap-2">
-                        {OFFICIAL_SERVICES.map((srv) => {
-                          const Icon = getServiceIcon(srv.slug);
-                          return (
-                            <Link
-                              key={srv.id}
-                              href={`/services/${srv.slug}`}
-                              onClick={() => setServicesDropdownOpen(false)}
-                              className="flex flex-col items-center text-center p-3 rounded-2xl hover:bg-blue-50/80 transition-all group border border-transparent hover:border-blue-200"
-                            >
-                              <div className="w-11 h-11 rounded-2xl bg-blue-50 text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-all flex items-center justify-center mb-2 shadow-2xs">
-                                <Icon className="w-5 h-5" />
-                              </div>
-                              <h4 className="text-xs font-bold text-slate-900 group-hover:text-blue-600 leading-tight">
-                                {srv.title}
-                              </h4>
-                              <span className="text-[10px] text-cyan-600 font-semibold mt-1">
-                                {srv.badge}
-                              </span>
-                            </Link>
-                          );
-                        })}
-                      </div>
-
+                <div className="absolute top-full left-0 w-[580px] -mt-1 pt-2 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+                  <div className="bg-white rounded-3xl border border-slate-200 shadow-2xl p-6 grid grid-cols-2 gap-3">
+                    <div className="col-span-2 pb-3 mb-1 border-b border-slate-100 flex items-center justify-between">
+                      <span className="text-xs font-black uppercase tracking-wider text-slate-500 flex items-center gap-2">
+                        <Sparkles className="w-3.5 h-3.5 text-blue-600" />
+                        Our IT & Digital Engineering Services
+                      </span>
+                      <Link 
+                        href="/services"
+                        onClick={() => setServicesDropdownOpen(false)}
+                        className="text-xs font-bold text-blue-600 hover:underline"
+                      >
+                        All Services Studio &rarr;
+                      </Link>
                     </div>
+
+                    {OFFICIAL_SERVICES.map((srv) => {
+                      const Icon = getServiceIcon(srv.slug);
+                      return (
+                        <Link
+                          key={srv.id}
+                          href={`/services/${srv.slug}`}
+                          onClick={() => setServicesDropdownOpen(false)}
+                          className="flex items-start gap-3 p-3 rounded-2xl hover:bg-blue-50/70 transition-colors group"
+                        >
+                          <div className="p-2 rounded-xl bg-blue-50 text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-colors flex-shrink-0 mt-0.5">
+                            <Icon className="w-4 h-4" />
+                          </div>
+                          <div className="min-w-0">
+                            <h4 className="text-xs font-bold text-slate-900 group-hover:text-blue-600 transition-colors truncate">
+                              {srv.title}
+                            </h4>
+                            <p className="text-[11px] text-slate-500 line-clamp-1 mt-0.5">
+                              {srv.tagline}
+                            </p>
+                          </div>
+                        </Link>
+                      );
+                    })}
                   </div>
                 </div>
               )}
             </div>
 
-            {/* PRODUCTS Mega Dropdown */}
+            {/* PRODUCTS Dropdown - 2 Column Menu */}
             <div 
               className="relative"
               onMouseEnter={() => setProductsDropdownOpen(true)}
@@ -171,7 +164,7 @@ export default function Navbar() {
             >
               <Link
                 href="/products"
-                className={`px-3 py-2 rounded-xl text-sm font-semibold transition-all flex items-center gap-1.5 ${
+                className={`px-3.5 py-2 rounded-xl text-sm font-semibold transition-all flex items-center gap-1.5 ${
                   pathname.startsWith('/products') ? 'text-blue-600 bg-blue-50/90 font-bold' : 'text-slate-700 hover:text-blue-600 hover:bg-slate-100/70'
                 }`}
               >
@@ -179,7 +172,6 @@ export default function Navbar() {
                 <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${productsDropdownOpen ? 'rotate-180 text-blue-600' : 'text-slate-400'}`} />
               </Link>
 
-              {/* Mega Dropdown Panel */}
               {productsDropdownOpen && (
                 <div className="absolute top-full left-0 w-[580px] -mt-1 pt-2 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
                   <div className="bg-white rounded-3xl border border-slate-200 shadow-2xl p-6 grid grid-cols-2 gap-3">
@@ -227,7 +219,7 @@ export default function Navbar() {
 
             <Link
               href="/hire-developers"
-              className={`px-3 py-2 rounded-xl text-sm font-semibold transition-all flex items-center gap-1.5 ${
+              className={`px-3.5 py-2 rounded-xl text-sm font-semibold transition-all flex items-center gap-1.5 ${
                 pathname === '/hire-developers' ? 'text-blue-600 bg-blue-50/90' : 'text-slate-700 hover:text-blue-600 hover:bg-slate-100/70'
               }`}
             >
@@ -239,7 +231,7 @@ export default function Navbar() {
 
             <Link
               href="/our-works"
-              className={`px-3 py-2 rounded-xl text-sm font-semibold transition-all ${
+              className={`px-3.5 py-2 rounded-xl text-sm font-semibold transition-all ${
                 pathname === '/our-works' ? 'text-blue-600 bg-blue-50/90' : 'text-slate-700 hover:text-blue-600 hover:bg-slate-100/70'
               }`}
             >
@@ -248,7 +240,7 @@ export default function Navbar() {
 
             <Link
               href="/about"
-              className={`px-3 py-2 rounded-xl text-sm font-semibold transition-all ${
+              className={`px-3.5 py-2 rounded-xl text-sm font-semibold transition-all ${
                 pathname === '/about' ? 'text-blue-600 bg-blue-50/90' : 'text-slate-700 hover:text-blue-600 hover:bg-slate-100/70'
               }`}
             >
@@ -257,7 +249,7 @@ export default function Navbar() {
 
             <Link
               href="/blog"
-              className={`px-3 py-2 rounded-xl text-sm font-semibold transition-all ${
+              className={`px-3.5 py-2 rounded-xl text-sm font-semibold transition-all ${
                 pathname === '/blog' ? 'text-blue-600 bg-blue-50/90' : 'text-slate-700 hover:text-blue-600 hover:bg-slate-100/70'
               }`}
             >
@@ -266,7 +258,7 @@ export default function Navbar() {
 
             <Link
               href="/contact"
-              className={`px-3 py-2 rounded-xl text-sm font-semibold transition-all ${
+              className={`px-3.5 py-2 rounded-xl text-sm font-semibold transition-all ${
                 pathname === '/contact' ? 'text-blue-600 bg-blue-50/90' : 'text-slate-700 hover:text-blue-600 hover:bg-slate-100/70'
               }`}
             >
@@ -274,7 +266,7 @@ export default function Navbar() {
             </Link>
           </nav>
 
-          {/* Action CTA - NO LOGIN BUTTON */}
+          {/* Action CTA */}
           <div className="hidden lg:flex items-center space-x-3">
             <Link
               href="/book-demo"
@@ -299,26 +291,25 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* Mobile Menu Dropdown */}
+      {/* Mobile Menu */}
       {mobileMenuOpen && (
         <div className="lg:hidden border-b border-slate-200 bg-white px-5 pt-3 pb-6 space-y-2 shadow-2xl animate-in slide-in-from-top duration-200 max-h-[85vh] overflow-y-auto">
           
-          {/* Services Mobile Submenu Accordion */}
           <div className="border border-slate-100 rounded-2xl p-3 bg-slate-50/70">
             <Link
               href="/services"
               onClick={() => setMobileMenuOpen(false)}
               className="text-xs font-black uppercase tracking-wider text-blue-700 block mb-2"
             >
-              Our Services Portfolio:
+              Our Services:
             </Link>
-            <div className="grid grid-cols-2 gap-1.5 pl-2 border-l-2 border-blue-200">
+            <div className="space-y-1.5 pl-2 border-l-2 border-blue-200">
               {OFFICIAL_SERVICES.map((srv) => (
                 <Link
                   key={srv.id}
                   href={`/services/${srv.slug}`}
                   onClick={() => setMobileMenuOpen(false)}
-                  className="text-xs font-medium text-slate-700 hover:text-blue-600 py-1 truncate"
+                  className="block text-xs font-medium text-slate-700 hover:text-blue-600 py-1"
                 >
                   • {srv.title}
                 </Link>
@@ -326,7 +317,6 @@ export default function Navbar() {
             </div>
           </div>
 
-          {/* Mobile Products Submenu Accordion */}
           <div className="border border-slate-100 rounded-2xl p-3 bg-slate-50/70">
             <Link
               href="/products"
